@@ -11,4 +11,4 @@ Just running `make` with the avr toolchain installed should generate the `.hex` 
 ## TODOs
 
 1. Schematics (µC pinout is specified on source code)
-2. Closed loop PWM/RPM control (will probably require a µC with larger memory, like 4313 or an ATmega)
+2. Closed loop PWM/RPM control (will probably require a µC with larger memory, like a 4313A or ATmega)
