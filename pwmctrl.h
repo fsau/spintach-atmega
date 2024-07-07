@@ -8,5 +8,6 @@
 
 void pwm_setup();
 void pwm_set(uint8_t, uint8_t);
+void pwm_set_duty(uint8_t);
 
 #endif

@@ -12,11 +12,9 @@
 #define TACH_PIN PIND
 #define TACH_N PD6
 
-extern uint32_t tach_per;
-extern uint8_t tach_mul;
-
 void tach_setup();
 void tach_ovf();
 void tach_input(uint16_t);
+uint16_t tach_rpm();
 
 #endif

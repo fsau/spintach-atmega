@@ -16,13 +16,9 @@
 #define SIZE_LINE 16
 #define STROBE_LEN_US 40
 
-extern uint32_t tach_per;
-extern uint8_t tach_mul;
-extern uint8_t tach_div;
-
 void display_setup();
 void display_clear();
-void display_rpm();
+void display_rpm(uint16_t,uint8_t,uint8_t);
 void display_test(uint8_t, uint8_t);
 
 #endif

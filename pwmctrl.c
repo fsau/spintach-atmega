@@ -19,3 +19,13 @@ void pwm_set(uint8_t duty, uint8_t per)
     OCR0B = ((uint16_t)per * duty) / 255;
     OCR0A = per;
 }
+
+void pwm_set_duty(uint8_t duty)
+{
+    if (duty == 0)
+        TCCR0A &= ~_BV(COM0B1); // disable
+    else
+        TCCR0A |= _BV(COM0B1); // enable OCR0B
+
+    OCR0B = ((uint16_t)OCR0A * duty) / 255;
+}

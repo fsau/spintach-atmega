@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <avr/cpufunc.h>
 #include <avr/pgmspace.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 
 #include "tach.h"
@@ -13,6 +14,7 @@
 #define SW_PORT PORTD
 #define SW1_N PD2
 #define SW2_N PD3
+#define SW_DELAY_FAST 16
 
 FUSES = {
     // attiny2313a, ext. crystal 4.096MHz
@@ -20,7 +22,8 @@ FUSES = {
     .high = (FUSE_SPIEN),
 };
 
-// todos: zero
+uint8_t pwm_save EEMEM = 127;
+uint8_t state_save EEMEM = 0;
 
 int main(void)
 {
@@ -29,30 +32,78 @@ int main(void)
     tach_setup();
 
     display_clear();
+
+    uint8_t pwm_duty = eeprom_read_byte(&pwm_save);
+    uint8_t state = eeprom_read_byte(&state_save);
+
     sei();
-    uint8_t sel = 0;
+    uint8_t button1 = 0, button2 = 0;
     for (uint8_t i = 0;; i++)
     {
-        pwm_set(127, 255 - i / 8);
         if (bit_is_clear(SW_PIN, SW1_N))
         {
-            if (~sel & 2)
+            if(button1==0)
             {
-                sel ^= 1;
-                display_clear();
+                button1 = SW_DELAY_FAST;
             }
-            sel |= 2;
+            else
+            {
+                button1--;
+                if(button1==0)
+                {
+                    if(pwm_duty<255) pwm_duty++;
+                    button1=1;
+                }
+            }
         }
         else
         {
-            sel &= ~2;
+            if((button1 > 1)&&(button1 < SW_DELAY_FAST))
+            {
+                if(pwm_duty<255) pwm_duty++;
+            }
+            button1=0;
         }
 
-        if (sel & 1)
-            display_test(bit_is_clear(SW_PIN, SW1_N), bit_is_clear(SW_PIN, SW2_N));
+        if (bit_is_clear(SW_PIN, SW2_N))
+        {
+            if(button2==0)
+            {
+                button2 = SW_DELAY_FAST;
+            }
+            else
+            {
+                button2--;
+                if(button2==0)
+                {
+                    if(pwm_duty>56) pwm_duty--;
+                    button2=1;
+                }
+            }
+        }
         else
-            display_rpm();
-        _delay_ms(10);
+        {
+            if((button2 > 1)&&(button2 < SW_DELAY_FAST))
+            {
+                if(pwm_duty>56) pwm_duty--;
+            }
+            button2=0;
+        }
+
+        if((button1>1)&&(button2>1))
+        {
+            if(button1<=SW_DELAY_FAST)
+            {
+                state^=1;
+                eeprom_write_byte(&state_save,state&1);
+                if(~state&1) eeprom_write_byte(&pwm_save,pwm_duty);
+            } 
+            button1=button2=0xFF;
+        }
+
+        pwm_set_duty((state&1)?pwm_duty:0);
+        display_rpm(tach_rpm(),pwm_duty,state);
+        _delay_ms(20);
     }
 
     return 0;
