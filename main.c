@@ -31,6 +31,7 @@
 #include "tach.h"
 #include "pwmctrl.h"
 #include "lcd-driver.h"
+#include "uart.h"
 
 #define SW_PORT PORTD
 #define SW_PIN PIND
@@ -53,15 +54,15 @@ int main(void)
     display_setup();
     pwm_setup();
     tach_setup();
-
-    display_clear();
+    uart_setup();
 
     uint8_t pwm_duty = eeprom_read_byte(&pwm_save);
     uint8_t state = eeprom_read_byte(&state_save);
-
-    sei();
     uint8_t button1 = 0, button2 = 0;
-    for (uint8_t i = 0;; i++)
+
+    display_clear();
+    sei();
+    for (;;)
     {
         if (bit_is_clear(SW_PIN, SW1_N))
         {
@@ -134,10 +135,17 @@ int main(void)
 
 ISR(TIMER1_CAPT_vect)
 {
-    tach_input(ICR1);
+    uint16_t input_val = ICR1;
+    tach_input(input_val);
+    uart_send_word(input_val);
 }
 
 ISR(TIMER1_OVF_vect)
 {
     tach_ovf();
+}
+
+ISR(USART_TX_vect)
+{
+    uart_tx_int();
 }

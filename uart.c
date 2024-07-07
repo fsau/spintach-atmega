@@ -21,26 +21,76 @@
  * SOFTWARE.
 */
 
-#ifndef LCD_DRIVER_H_FILE
-#define LCD_DRIVER_H_FILE
+#include <avr/io.h>
+#include <util/delay.h>
+#include "uart.h"
+#include <util/setbaud.h>
 
-#define LCD_DDR DDRB
-#define LCD_PIN PINB
-#define LCD_PORT PORTB
-#define LCD_D7_N PB0
-#define LCD_D6_N PB1
-#define LCD_D5_N PB2
-#define LCD_D4_N PB3
-#define LCD_E_N PB4
-#define LCD_RW_N PB5
-#define LCD_RS_N PB6
+uint16_t buff[BUFF_SIZE];
+uint8_t buff_i=0, buff_n=0;
 
-#define SIZE_COL 2
-#define SIZE_LINE 16
-#define STROBE_LEN_US 40
-
-void display_setup();
-void display_clear();
-void display_rpm(uint16_t,uint8_t,uint8_t);
-
+void uart_setup(void)
+{
+	UBRRH = UBRRH_VALUE;
+	UBRRL = UBRRL_VALUE;
+#if USE_2X
+	UCSRA |= (1 << U2X); // Use 2x prescaler if needed
+#else
+	UCSRA &= ~(1 << U2X);
 #endif
+	UCSRB |= _BV(TXEN) | _BV(TXCIE);
+    UART_DDR |= _BV(UART_TX_N);
+}
+
+static void send_byte(uint8_t val)
+{
+    loop_until_bit_is_set(UCSRA, UDRE);
+    UDR = val;
+}
+
+static void buff_push_byte(uint8_t val)
+{
+    buff[buff_n] = val;
+    buff_n = (buff_n+1)%BUFF_SIZE;
+}
+
+static uint8_t buff_pop_byte()
+{
+    uint8_t val = buff[buff_i];
+    buff_i = (buff_i+1)%BUFF_SIZE;
+    return val;
+}
+
+static uint8_t buff_is_empty()
+{
+    return (buff_i==buff_n);
+}
+
+void uart_send_byte(uint8_t val)
+{
+    if(bit_is_set(UCSRA, UDRE)&&buff_is_empty())
+    {
+        send_byte(val);
+    }
+    else
+    {
+        buff_push_byte(val);
+    }
+}
+
+void uart_send_word(uint16_t val)
+{
+    uint8_t high,low;
+    high = (val>>8)&0xFF;
+    low = val&0xFF;
+    uart_send_byte(high);
+    buff_push_byte(low);
+}
+
+void uart_tx_int()
+{
+    if(!buff_is_empty())
+    {
+        send_byte(buff_pop_byte());
+    }
+}

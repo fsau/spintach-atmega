@@ -105,13 +105,6 @@ static void send_lcd_num(uint32_t num, uint8_t slen, uint8_t div, uint8_t line, 
     }
 }
 
-// static void send_lcd_nn(uint8_t num, uint8_t line, uint8_t col)
-// {
-//     set_pos(line, col);
-//     send_data(1, num / 10 + '0');
-//     send_data(1, num % 10 + '0');
-// }
-
 static void send_lcd_cstr(const char str[], uint8_t line, uint8_t col)
 {
     set_pos(line, col);
@@ -128,7 +121,7 @@ static void send_lcd_cstr(const char str[], uint8_t line, uint8_t col)
     } while (cts);
 }
 
-static void display_erase(uint8_t len, uint8_t line, uint8_t col)
+static void send_lcd_blank(uint8_t len, uint8_t line, uint8_t col)
 {
     set_pos(line, col);
     for (uint8_t i = len; i; --i)
@@ -176,25 +169,6 @@ void display_clear()
     send_data(0, 0x02);
     _delay_ms(2);
 }
-
-// const char helloworldstr[] PROGMEM = "Ol\002 mundo!";
-// const char butstr[] PROGMEM = "Bot\001o";
-// void display_test(uint8_t sw1, uint8_t sw2)
-// {
-//     send_lcd_cstr(helloworldstr, 0, 0);
-//     send_lcd_num(tach_mul, 3, 0, 0, 13);
-//     send_lcd_num(tach_per, 10, 0, 1, 6);
-
-//     if (sw1 || sw2)
-//     {
-//         send_lcd_cstr(butstr, 1, 0);
-//         send_lcd_nn((sw1 ? 1 : 0) | (sw2 ? 10 : 0), 1, 7);
-//     }
-//     else
-//     {
-//         display_erase(9, 1, 0);
-//     }
-// }
 
 const char rpmstr[] PROGMEM = "RPM";
 const char potstr[] PROGMEM = "Pot\005ncia";
