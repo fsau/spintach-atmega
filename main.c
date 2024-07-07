@@ -30,7 +30,7 @@
 
 #include "tach.h"
 #include "pwmctrl.h"
-#include "lcd-driver.h"
+#include "lcd.h"
 #include "uart.h"
 
 #define SW_PORT PORTD

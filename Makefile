@@ -3,7 +3,7 @@ MCU_TARGET ?= attiny2313a
 PGR = main
 CCFLAGS = -g3 -Wall -Wextra -Os --short-enums -flto -MMD -MP -DF_CPU=4096000UL
 PGR_HW = usbasp -B 125kHz
-MODULES = tach pwmctrl lcd-driver uart
+MODULES = tach pwmctrl lcd uart
 # EFLAGS ?= 
 
 DEP = $(wildcard ./build/*.d)
