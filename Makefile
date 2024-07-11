@@ -1,5 +1,5 @@
 # Makefile for avr-gcc
-MCU_TARGET ?= attiny2313a
+MCU_TARGET ?= atmega8
 PGR = main
 CCFLAGS = -g3 -Wall -Wextra -Os --short-enums -flto -MMD -MP -DF_CPU=4096000UL
 PGR_HW = usbasp -B 125kHz
